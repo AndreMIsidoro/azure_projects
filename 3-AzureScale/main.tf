@@ -50,3 +50,17 @@ module "storage" {
   location            = azurerm_resource_group.this.location
   blob_local_path = var.blob_local_path
 }
+
+module "monitring" {
+  source                    = "./modules/monitoring"  # Path to storage module
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  vmss_id = module.web_compute.vmss_id
+  alert_email = var.alert_email
+}
+
+module "cost_management" {
+  source = "./modules/cost_management"
+  contact_emails = var.contact_emails
+  subscription_id = var.subscription_id
+}

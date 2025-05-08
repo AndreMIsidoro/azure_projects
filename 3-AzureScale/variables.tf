@@ -35,3 +35,18 @@ variable "blob_local_path" {
   description = "The path to the blob to be uploaded"
   type        = string
 }
+
+variable "alert_email" {
+  description = "Email to receive alerts"
+  type        = string
+}
+
+variable "contact_emails" {
+  description = "List of email addresses to notify when budget thresholds are crossed"
+  type        = list(string)
+}
+
+variable "subscription_id" {
+  description = "Azure Subscription ID"
+  type        = string
+}

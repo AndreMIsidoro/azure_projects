@@ -7,3 +7,5 @@ subnets             = [
   {name="AppSubnet", address_prefix = "10.0.2.0/24"},
   {name="DBSubnet", address_prefix = "10.0.3.0/24"},
 ]
+alert_email = "test@example.com"
+contact_emails = [ "test@example.com" ]
