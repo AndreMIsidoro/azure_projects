@@ -5,8 +5,8 @@ resource "azurerm_resource_group" "this" {
 
 module "network" {
   source              = "./modules/network"
-  resource_group_name = var.resource_group_name
-  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
   vnet_name           = var.vnet_name
   address_space       = var.address_space
   subnets             = var.subnets
@@ -38,7 +38,15 @@ module "web_compute" {
 
 module "loadbalancer" {
   source              = "./modules/loadbalancer"
-  resource_group_name = var.resource_group_name
-  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
   public_ip_id        = module.network.public_ip_id
+}
+
+
+module "storage" {
+  source                    = "./modules/storage"  # Path to storage module
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  blob_local_path = var.blob_local_path
 }

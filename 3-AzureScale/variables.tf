@@ -30,3 +30,8 @@ variable "ssh_public_key_path" {
   description = "The path to the SSH public key to be used for authentication"
   type        = string
 }
+
+variable "blob_local_path" {
+  description = "The path to the blob to be uploaded"
+  type        = string
+}
