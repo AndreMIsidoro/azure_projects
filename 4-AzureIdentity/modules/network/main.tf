@@ -9,19 +9,46 @@ resource "azurerm_virtual_network" "this" {
   }
 }
 
-resource "azurerm_subnet" "frontend_subnet" {
-  name                 = "frontend-subnet"
+# Subnet for Azure Container Instance
+resource "azurerm_subnet" "aci_subnet" {
+  name                 = "aci-subnet"
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = ["10.0.1.0/24"]  # Subnet for the frontend layer
+  address_prefixes     = ["10.0.1.0/24"]
+
+  delegation {
+    name = "aci-delegation"
+
+    service_delegation {
+      name    = "Microsoft.ContainerInstance/containerGroups"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+    }
+  }
+}
+# Subnet for VMSS (Jenkins/Nextcloud)
+resource "azurerm_subnet" "vmss_subnet" {
+  name                 = "vmss_subnet"
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["10.0.2.0/24"]
 }
 
-resource "azurerm_subnet" "backend_subnet" {
-  name                 = "backend-subnet"
+# Subnet for Application Gateway (must be named GatewaySubnet)
+resource "azurerm_subnet" "appgw_subnet" {
+  name                 = "appgw_subnet"
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = ["10.0.2.0/24"]  # Subnet for the backend layer
+  address_prefixes     = ["10.0.3.0/24"]
 }
+
+# Subnet for Azure Bastion (must be named AzureBastionSubnet)
+resource "azurerm_subnet" "bastion_subnet" {
+  name                 = "AzureBastionSubnet"
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["10.0.4.0/27"]
+}
+
 
 
 # Creating public ip for Application Gateway
@@ -50,7 +77,7 @@ resource "azurerm_application_gateway" "this" {
 
   gateway_ip_configuration {
     name      = "appgw-ip-config"
-    subnet_id = azurerm_subnet.frontend_subnet.id
+    subnet_id = azurerm_subnet.appgw_subnet.id
   }
 
   frontend_port {
