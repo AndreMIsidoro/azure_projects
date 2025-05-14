@@ -7,3 +7,8 @@ variable "location" {
   description = "Azure location for the resources"
   type        = string
 }
+
+variable "subnet_vmss_id" {
+  description = "Subnet for jenkins and nextcloud vmss id"
+  type        = string
+}

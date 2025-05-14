@@ -201,6 +201,8 @@ resource "azurerm_application_gateway" "this" {
   }
 }
 
+# NSG Nginx
+
 resource "azurerm_network_security_group" "nginx_nsg" {
   name                = "nginx-nsg"
   location            = var.location
@@ -234,6 +236,43 @@ resource "azurerm_network_security_group" "nginx_nsg" {
 resource "azurerm_subnet_network_security_group_association" "nginx_nsg_assoc" {
   subnet_id                 = azurerm_subnet.nginx_subnet.id
   network_security_group_id = azurerm_network_security_group.nginx_nsg.id
+}
+
+# NSG VMSS
+
+resource "azurerm_network_security_group" "vmss_nsg" {
+  name                = "vmss-nsg"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+
+  security_rule {
+    name                       = "Allow-AppGW-To-NGINX"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = azurerm_subnet.vmss_subnet.address_prefixes[0]
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-SSH"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_subnet_network_security_group_association" "vmss_nsg_assoc" {
+  subnet_id                 = azurerm_subnet.vmss_subnet.id
+  network_security_group_id = azurerm_network_security_group.vmss_nsg.id
 }
 
 # Azure Bastion

@@ -1,0 +1,15 @@
+#cloud-config
+package_update: true
+package_upgrade: false
+packages:
+  - openjdk-11-jdk
+  - gnupg2
+  - wget
+
+runcmd:
+  - wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | apt-key add -
+  - sh -c 'echo deb https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
+  - apt update -y
+  - apt install -y jenkins
+  - systemctl enable jenkins
+  - systemctl start jenkins

@@ -14,6 +14,11 @@ output "subnet_nginx_id" {
 }
 
 
+output "subnet_vmss_id" {
+  description = "Sub Network Jenkins ID"
+  value       = azurerm_subnet.vmss_subnet.id
+}
+
 # Public ip outputs
 
 output "public_ip_id" {
