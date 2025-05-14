@@ -4,3 +4,19 @@ output "vnet_id" {
   description = "Virtual Network IDs"
   value       = azurerm_virtual_network.this.id
 }
+
+
+# Subnet ids
+
+output "subnet_nginx_id" {
+  description = "Sub Network  Nginx ID"
+  value       = azurerm_subnet.nginx_subnet.id
+}
+
+
+# Public ip outputs
+
+output "public_ip_id" {
+  description = "The ID of the public IP address."
+  value       = azurerm_public_ip.this.id
+}

@@ -33,7 +33,7 @@ resource "azurerm_subnet" "vmss_subnet" {
   address_prefixes     = ["10.0.2.0/24"]
 }
 
-# Subnet for Application Gateway (must be named GatewaySubnet)
+# Subnet for Application Gateway
 resource "azurerm_subnet" "appgw_subnet" {
   name                 = "appgw_subnet"
   resource_group_name  = var.resource_group_name
@@ -49,6 +49,14 @@ resource "azurerm_subnet" "bastion_subnet" {
   address_prefixes     = ["10.0.4.0/27"]
 }
 
+#Nginx subnet
+resource "azurerm_subnet" "nginx_subnet" {
+  name                 = "nginx_subnet"
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["10.0.5.0/27"]
+}
+
 
 
 # Creating public ip for Application Gateway
@@ -62,6 +70,61 @@ resource "azurerm_public_ip" "this" {
     environment = "development"
   }
 }
+
+
+
+# Nginx reverse proxy
+
+resource "azurerm_network_interface" "nginx" {
+  name                = "nginx-nic"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.nginx_subnet.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_linux_virtual_machine" "nginx" {
+  name                = "nginx-vm"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  size                = "Standard_B1s"
+  admin_username      = "azureuser"
+  network_interface_ids = [
+    azurerm_network_interface.nginx.id
+  ]
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+    name                 = "nginx-disk"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
+
+  admin_ssh_key {
+    username   = "azureuser"
+    public_key = file("~/.ssh/azure_key.pub")
+  }
+
+  custom_data = base64encode(templatefile("${path.module}/cloud-init/nginx.yaml", {
+    jenkins_ip   = "10.0.2.4"
+    nextcloud_ip = "10.0.2.5"
+  }))
+
+
+  tags = {
+    environment = "development"
+  }
+}
+
 
 # Creating Application Gateway
 
@@ -92,7 +155,7 @@ resource "azurerm_application_gateway" "this" {
 
   backend_address_pool {
     name = "default-backend-pool"
-    # attach targets later (ACI/VMSS IPs)
+    ip_addresses = [azurerm_network_interface.nginx.private_ip_address]
   }
 
   backend_http_settings {
@@ -119,7 +182,56 @@ resource "azurerm_application_gateway" "this" {
     priority                   = 100
   }
 
+  probe {
+    name = "nginx-probe"
+    protocol = "Http"
+    path = "/"
+    interval = 30
+    timeout = 30
+    unhealthy_threshold = 3
+    pick_host_name_from_backend_http_settings = true
+    match {
+      status_code = ["200-399"]
+    }
+  }
+
   tags = {
     environment = "development"
   }
 }
+
+resource "azurerm_network_security_group" "nginx_nsg" {
+  name                = "nginx-nsg"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+
+  security_rule {
+    name                       = "Allow-AppGW-To-NGINX"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = azurerm_subnet.appgw_subnet.address_prefixes[0]
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-SSH"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_subnet_network_security_group_association" "nginx_nsg_assoc" {
+  subnet_id                 = azurerm_subnet.nginx_subnet.id
+  network_security_group_id = azurerm_network_security_group.nginx_nsg.id
+}
+
