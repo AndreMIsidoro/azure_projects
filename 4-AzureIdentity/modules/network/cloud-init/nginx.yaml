@@ -7,20 +7,18 @@ write_files:
     content: |
       server {
           listen 80;
-          server_name jenkins.azurewebsites.net;
-          location / {
+          server_name _;
+          location /jenkins/ {
               proxy_pass http://${jenkins_ip}:8080;
               proxy_set_header Host $host;
               proxy_set_header X-Real-IP $remote_addr;
+              proxy_redirect off;
           }
-      }
-      server {
-          listen 80;
-          server_name nextcloud.azurewebsites.net;
-          location / {
-              proxy_pass http://${nextcloud_ip};
+          location /nextcloud/ {
+              proxy_pass http://${nextcloud_ip}:8080;
               proxy_set_header Host $host;
               proxy_set_header X-Real-IP $remote_addr;
+              proxy_redirect off;
           }
       }
 
