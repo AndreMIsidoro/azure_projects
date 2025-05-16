@@ -8,9 +8,19 @@ variable "location" {
   type        = string
 }
 
-variable "subnet_vmss_id" {
-  description = "Subnet for jenkins and nextcloud vmss id"
+variable "subnet_nginx_id" {
+  description = "Subnet nginx id"
   type        = string
+}
+
+variable "app_gateway_subnet_prefixes" {
+  description = "App gateway subnet prefixes"
+  type = string
+}
+
+variable "jenkins_private_ip" {
+  description = "Jenkins private Ip"
+  type = string
 }
 
 variable "enable_debug" {

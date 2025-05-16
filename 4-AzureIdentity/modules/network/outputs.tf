@@ -19,6 +19,11 @@ output "subnet_vmss_id" {
   value       = azurerm_subnet.vmss_subnet.id
 }
 
+output "subnet_appgw_id" {
+  description = "Sub Network Jenkins ID"
+  value       = azurerm_subnet.appgw_subnet.id
+}
+
 # Public ip outputs
 
 output "public_ip_id" {
@@ -31,4 +36,10 @@ output "public_ip_id" {
 
 output "app_gateway_dns_name" {
   value = azurerm_public_ip.this.fqdn
+}
+
+# App Gateway Subnet Prefixes
+
+output "app_gateway_subnet_prefixes" {
+  value =  azurerm_subnet.appgw_subnet.address_prefixes[0]
 }

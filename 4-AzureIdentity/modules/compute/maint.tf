@@ -1,3 +1,16 @@
+#only for debug purposes
+resource "azurerm_public_ip" "debug" {
+  count               = var.enable_debug ? 1 : 0
+  name                = "debug-ip"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  allocation_method   = "Static"
+  sku                 = "Basic"
+  tags = {
+    purpose = "debug"
+  }
+}
+
 resource "azurerm_network_interface" "jenkins" {
   name                = "jenkis-nic"
   location            = var.location
@@ -7,6 +20,7 @@ resource "azurerm_network_interface" "jenkins" {
     name                          = "internal"
     subnet_id                     = var.subnet_vmss_id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = var.enable_debug ? azurerm_public_ip.debug[0].id : null
   }
 }
 
@@ -26,9 +40,9 @@ resource "azurerm_linux_virtual_machine" "jenkins" {
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
+    publisher = "Debian"
+    offer     = "debian-12"
+    sku       = "12"
     version   = "latest"
   }
 
@@ -37,7 +51,7 @@ resource "azurerm_linux_virtual_machine" "jenkins" {
     public_key = file("~/.ssh/azure_key.pub")
   }
 
-  custom_data = base64encode(templatefile("${path.module}/cloud-init/jenkins.yaml", {}))
+  custom_data = base64encode(file("${path.module}/cloud-init/jenkins.yaml"))
 
 
   tags = {

@@ -17,3 +17,9 @@ variable "vnet_name" {
   description = "Virtual Nerwork name"
   type = string
 }
+
+variable "enable_debug" {
+  description = "Enable debug resources"
+  type        = bool
+  default     = false
+}

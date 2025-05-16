@@ -1,15 +1,14 @@
-#cloud-config
+  #cloud-config
 package_update: true
 package_upgrade: false
-packages:
-  - openjdk-11-jdk
-  - gnupg2
-  - wget
 
 runcmd:
-  - wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | apt-key add -
-  - sh -c 'echo deb https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
-  - apt update -y
-  - apt install -y jenkins
+  - apt-get update
+  - apt-get install -y gnupg2 wget apt-transport-https ca-certificates
+  - apt-get install -y openjdk-17-jdk
+  - sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+  - echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+  - apt-get update
+  - apt-get install -y jenkins
   - systemctl enable jenkins
   - systemctl start jenkins
