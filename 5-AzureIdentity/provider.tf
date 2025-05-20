@@ -16,4 +16,3 @@ provider "azurerm" {
 
 provider "azuread" {}
 
-data "azurerm_client_config" "current" {} # retrieves metadata about the currently authenticated identity being used to run Terraform
