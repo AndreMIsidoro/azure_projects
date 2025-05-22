@@ -9,3 +9,5 @@ terraform.tfstate.backup
 # Sensitive files
 set_env.sh
 
+# java
+azureentraapp/target/

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+    <main>
+        <h1>Welcome, <span th:text="${userName}">User</span>!</h1>
+        <p>Your email is: <span th:text="${userEmail}">email@example.com</span></p>
+
+        <form action="/logout" method="post">
+            <button type="submit">Logout</button>
+        </form>
+    </main>
+</body>
+</html>
