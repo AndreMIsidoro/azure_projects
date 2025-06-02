@@ -1,0 +1,13 @@
+# .gitignore for Terraform projects
+
+# Local Terraform directories and files
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+
+# Sensitive files
+set_env.sh
+
+# java
+azureentraapp/target/
