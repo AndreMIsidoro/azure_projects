@@ -1,3 +1,3 @@
 # Main Variables
-resource_group_name = "AzureIdentity-rg"
+resource_group_name = "AzureSecurity-rg"
 location            = "East US"
